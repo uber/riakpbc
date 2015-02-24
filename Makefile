@@ -2,8 +2,8 @@ ifeq ($(TEST_ENV),travis)
 	command := sudo
 	param := riak-admin
 else
-	command := sudo
-	param := riak-admin
+	command := riak-admin
+	param :=
 endif
 
 test: dt-setup
