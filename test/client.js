@@ -1,5 +1,7 @@
 var Lab = require('lab');
 var RiakPBC = require('../');
+var async = require('async');
+var net = require('net');
 
 var lab = exports.lab = Lab.script();
 var after = lab.after;
@@ -18,6 +20,35 @@ describe('Client', function () {
             client.ping(function (err) {
 
                 expect(err).to.exist;
+                done();
+            });
+        });
+
+        it('returns an error when request times out', function (done) {
+            var server = net.createServer();
+            server.listen(4312);
+            server.on('connection', function (socket) {
+                setTimeout(socket.end.bind(socket), 100);
+            });
+
+            var client = RiakPBC.createClient({ port: 4312, connectTimeout: 10 });
+            async.parallel([
+                function (next) {
+                    client.get({
+                        timeout: 50
+                    }, function (err) {
+                        expect(err.message).to.equal('Request timeout');
+                        next();
+                    });
+                },
+                function (next) {
+                    client.ping(function (err) {
+                        expect(err.message).to.equal('Request timeout');
+                        next();
+                    });
+                }
+            ], function () {
+                server.close();
                 done();
             });
         });
