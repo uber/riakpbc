@@ -27,13 +27,13 @@ describe('Client', function () {
         it('returns an error when request times out', function (done) {
             var server = net.createServer();
             server.listen(4312);
-            server.on('connection', function(socket) {
+            server.on('connection', function (socket) {
                 setTimeout(socket.end.bind(socket), 100);
             });
 
             var client = RiakPBC.createClient({ port: 4312, connectTimeout: 10 });
             async.parallel([
-                function(next) {
+                function (next) {
                     client.get({
                         timeout: 50
                     }, function (err) {
@@ -41,13 +41,13 @@ describe('Client', function () {
                         next();
                     });
                 },
-                function(next) {
+                function (next) {
                     client.ping(function (err) {
                         expect(err.message).to.equal('Request timeout');
                         next();
                     });
                 }
-            ], function() {
+            ], function () {
                 server.close();
                 done();
             });
